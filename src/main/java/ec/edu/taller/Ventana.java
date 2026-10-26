@@ -1,4 +1,3 @@
-
 package ec.edu.taller;
 
 import javax.swing.*;
@@ -35,7 +34,6 @@ public class Ventana {
             new ArrayList<>();
 
     private IncidenteUI incidenteActual;
-    private int indiceActual = -1;
 
     // Clase auxiliar para manejar los datos en esta ventana.
     private static class IncidenteUI {
@@ -224,44 +222,27 @@ public class Ventana {
     }
 
 
-    private void mostrarSiguiente() {
+    // Devuelve el pendiente de mayor prioridad (menor numero),
+    // equivalente al peek() de la PriorityQueue.
+    private IncidenteUI obtenerSiguientePendiente() {
 
         ordenarPorPrioridad();
 
-        if (incidentes.isEmpty()) {
-            incidenteActual = null;
-            indiceActual = -1;
-            mostrarDatos(null);
-            actualizarContadores();
-            return;
-        }
-
-        int total = incidentes.size();
-        int inicio = indiceActual;
-
-        // Buscar el siguiente incidente pendiente.
-        for (int i = 1; i <= total; i++) {
-
-            int siguiente = (inicio + i) % total;
-
-            IncidenteUI incidente = incidentes.get(siguiente);
-
+        for (IncidenteUI incidente : incidentes) {
             if ("PENDIENTE".equals(incidente.estado)) {
-
-                incidenteActual = incidente;
-                indiceActual = siguiente;
-
-                mostrarDatos(incidenteActual);
-                actualizarContadores();
-                return;
+                return incidente;
             }
         }
 
-        // No quedan incidentes pendientes.
-        incidenteActual = null;
-        indiceActual = -1;
+        return null;
+    }
 
-        mostrarDatos(null);
+    private void mostrarSiguiente() {
+
+        // Siempre se muestra el de mayor prioridad entre los pendientes.
+        incidenteActual = obtenerSiguientePendiente();
+
+        mostrarDatos(incidenteActual);
         actualizarContadores();
     }
 
@@ -348,9 +329,10 @@ public class Ventana {
 
     private void atenderIncidente() {
 
-        if (incidenteActual == null
-                || !"PENDIENTE".equals(incidenteActual.estado)) {
+        // Se atiende el de mayor prioridad, no el que este en pantalla.
+        IncidenteUI siguiente = obtenerSiguientePendiente();
 
+        if (siguiente == null) {
             JOptionPane.showMessageDialog(
                     Panel,
                     "No hay un incidente pendiente para atender.",
@@ -360,15 +342,14 @@ public class Ventana {
             return;
         }
 
-        incidenteActual.estado = "ATENDIDO";
+        siguiente.estado = "ATENDIDO";
 
         JOptionPane.showMessageDialog(
                 Panel,
-                "Incidente " + incidenteActual.codigo
+                "Incidente " + siguiente.codigo
                         + " atendido correctamente."
         );
 
-        actualizarContadores();
         listarIncidentes();
         mostrarSiguiente();
     }
