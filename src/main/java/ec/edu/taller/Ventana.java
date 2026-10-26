@@ -93,7 +93,7 @@ public class Ventana {
 
         // Mostrar el primer incidente y los contadores.
         actualizarContadores();
-        mostrarSiguiente();
+        mostrarPrimero();
     }
 
     private void cargarCasosPrueba() {
@@ -237,10 +237,38 @@ public class Ventana {
         return null;
     }
 
+    // Muestra el incidente de mayor prioridad (el que se atendera).
+    private void mostrarPrimero() {
+
+        incidenteActual = obtenerSiguientePendiente();
+
+        mostrarDatos(incidenteActual);
+        actualizarContadores();
+    }
+
+    // Solo para VER: avanza al siguiente pendiente segun el orden
+    // de prioridad. No atiende ni modifica ningun incidente.
     private void mostrarSiguiente() {
 
-        // Siempre se muestra el de mayor prioridad entre los pendientes.
-        incidenteActual = obtenerSiguientePendiente();
+        ordenarPorPrioridad();
+
+        List<IncidenteUI> pendientes = new ArrayList<>();
+        for (IncidenteUI incidente : incidentes) {
+            if ("PENDIENTE".equals(incidente.estado)) {
+                pendientes.add(incidente);
+            }
+        }
+
+        if (pendientes.isEmpty()) {
+            incidenteActual = null;
+            mostrarDatos(null);
+            actualizarContadores();
+            return;
+        }
+
+        int posicion = pendientes.indexOf(incidenteActual);
+        incidenteActual = pendientes.get(
+                (posicion + 1) % pendientes.size());
 
         mostrarDatos(incidenteActual);
         actualizarContadores();
@@ -313,7 +341,7 @@ public class Ventana {
 
         ordenarPorPrioridad();
         actualizarContadores();
-        mostrarSiguiente();
+        mostrarPrimero();
 
         // Limpiar los campos del formulario.
         txtCodigo.setText("");
@@ -351,7 +379,7 @@ public class Ventana {
         );
 
         listarIncidentes();
-        mostrarSiguiente();
+        mostrarPrimero();
     }
 
     private void listarIncidentes() {
